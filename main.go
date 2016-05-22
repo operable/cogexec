@@ -10,13 +10,6 @@ import (
 	"time"
 )
 
-func ackDeath(success bool, encoder *gob.Encoder) {
-	encoder.Encode(&messages.ExecCommandResponse{
-		Success: success,
-		Dead:    true,
-	})
-}
-
 func runCommand(req *messages.ExecCommandRequest, encoder *gob.Encoder) {
 	command := exec.Command(req.Executable)
 	command.Env = req.Env
@@ -49,12 +42,12 @@ func main() {
 		req := &messages.ExecCommandRequest{}
 		err := decoder.Decode(req)
 		if err != nil {
-			ackDeath(false, encoder)
+			break
 		}
 		if req.Die {
-			ackDeath(true, encoder)
 			break
 		}
 		runCommand(req, encoder)
 	}
+	os.Exit(0)
 }
