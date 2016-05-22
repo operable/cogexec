@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/gob"
 	"fmt"
@@ -30,23 +29,21 @@ func runCommand(req *messages.ExecCommandRequest, encoder *gob.Encoder) {
 	start := time.Now()
 	err := command.Run()
 	finish := time.Now()
-	stderrFinal := stderr.Bytes()
-	if len(stderrFinal) == 0 && err != nil {
-		stderrFinal = []byte(fmt.Sprintf("%s\n", err))
+	if stderr.Len() == 0 && err != nil {
+		stderr.WriteString(fmt.Sprintf("%s\n", err))
 	}
 	resp := &messages.ExecCommandResponse{
 		Executable: req.Executable,
 		Success:    err == nil,
 		Stdout:     stdout.Bytes(),
-		Stderr:     stderrFinal,
+		Stderr:     stderr.Bytes(),
 		Elapsed:    finish.Sub(start),
 	}
 	encoder.Encode(resp)
 }
 
 func main() {
-	stdin := bufio.NewReader(os.Stdin)
-	decoder := gob.NewDecoder(stdin)
+	decoder := gob.NewDecoder(os.Stdin)
 	encoder := gob.NewEncoder(os.Stdout)
 	for {
 		req := &messages.ExecCommandRequest{}
