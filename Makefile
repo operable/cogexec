@@ -10,7 +10,7 @@ clean:
 
 docker: clean
 	GOOS=linux GOARCH=amd64 make all
-	docker build .
+	docker build -t operable/cogexec .
 
 $(BUILD_DIR)/$(EXE): $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(EXE) github.com/operable/cogexec

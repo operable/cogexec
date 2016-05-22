@@ -6,6 +6,7 @@ RUN mkdir -p /operable/cogexec/bin
 
 COPY _build/cogexec /operable/cogexec/bin
 
-RUN chmod +x /operable/cogexec/bin/cogexec
+RUN chmod +x /operable/cogexec/bin && apk-install binutils && \
+    strip -s -v /operable/cogexec/bin/cogexec && apk del binutils
 
 VOLUME /operable/cogexec
