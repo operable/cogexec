@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
+	"flag"
 	"fmt"
 	"github.com/operable/cogexec/messages"
 	"io"
@@ -30,6 +31,9 @@ const (
 type dataLogger struct {
 	log *os.File
 }
+
+var keepContainerAlive = flag.Bool("wait", false, "Keep container alive by sleeping forever")
+var sleepInterval = time.Duration(60) * time.Second
 
 var logEOL = []byte("\n")
 var logDirectory = "/var/log"
@@ -91,7 +95,14 @@ func runCommand(req messages.ExecCommandRequest, encoder *gob.Encoder) {
 	encoder.Encode(resp)
 }
 
+func init() {
+	flag.Parse()
+}
+
 func main() {
+	if *keepContainerAlive {
+		sleepForever()
+	}
 	cmdIn := io.Reader(os.Stdin)
 	cmdOut := io.Writer(os.Stdout)
 	if os.Getenv("COG_EXEC_LOG") != "" {
@@ -124,4 +135,10 @@ func main() {
 		syscall.Fsync(int(os.Stdout.Fd()))
 	}
 	os.Exit(okStatus)
+}
+
+func sleepForever() {
+	for {
+		time.Sleep(sleepInterval)
+	}
 }
